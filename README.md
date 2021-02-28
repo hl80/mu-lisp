@@ -1,6 +1,4 @@
 # mu-lisp
-A toy lisp intepreter written in common lisp
-# mu-lisp
 
 Yet another lisp dialect written in common lisp.
 
