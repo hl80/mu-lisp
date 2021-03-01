@@ -124,7 +124,7 @@
 		      (print (muify #'format))
 		      (first (muify #'car)) (second (muify #'cdr)) (pair (muify #'cons)) (list (muify #'list))
 		      (parse (muify #'read)) (read-char (muify #'read-char)) (peek-char (muify #'peek-char))))))
-    (mu-run `(load "init.lisp") (list ge))
+    (and nil (mu-run `(load "init.lisp") (list ge)))
     ge))
 
 (defun mu-loop (env write-env)
