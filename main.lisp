@@ -1,6 +1,6 @@
 (defun mu-run (form &optional (env nil) (write-env (car (last env))))
   (if (atom form)
-      (if (symbolp form)
+      (if (and (symbolp form) (not (keywordp form)))
 	  (if env
 	      (let ((result (mu-run (list (car env) (list #'mu-quote form)) env write-env)))
 		(if (eql result :error)
@@ -113,6 +113,7 @@
 
 (defun global-env ()
   (let ((ge (env-map ((quote #'mu-quote)
+		      (*running* t)
 		      (if #'mu-if) (t t) (nil nil) (function #'mu-function) (macro #'mu-macro)
 		      (pack #'mu-pack) (def #'mu-def) (define #'mu-define) (let #'mu-let)
 		      (envr #'mu-envr) (basic #'mu-basic) (empty #'mu-empty) (with #'mu-with) (with-append #'mu-with-append) (run #'mu-eval)
@@ -125,18 +126,17 @@
 		      (first (muify #'car)) (second (muify #'cdr)) (pair (muify #'cons)) (list (muify #'list))
 		      (parse (muify #'read)) (read-char (muify #'read-char)) (peek-char (muify #'peek-char))))))
     (and nil (mu-run `(load "init.lisp") (list ge)))
+    (mu-run `(define quit (function () (define *running* nil))) (list ge) ge)
     ge))
 
 (defun mu-loop (env write-env)
-  (format t "$=>")
+  (format t "# ")
   (finish-output)
   (let ((form (mu-run `(parse) env write-env)))
-    (if (not (eql form :quit))
-	(progn
-	  (format t "==>~D~C" (mu-run form env write-env) #\linefeed)
-	  (finish-output)
-	  (mu-loop env write-env))
-	(format t "bye~C" #\linefeed))))
+    (format t "~D~C" (mu-run form env write-env) #\linefeed)
+    (finish-output)
+    (if (mu-run '*running* env write-env)
+	(mu-loop env write-env))))
 
 (defun mu-repl ()
   (let ((ge (global-env)))
