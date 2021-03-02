@@ -55,14 +55,16 @@ For example,
 - `pair` - equivalent of cons in common lisp
 - `list` - create a list.
 - `first` - equivalent of car
-- `second` - equivalent of cdr. Note -- it returns the second item of a pair not a list.
+- `rest` - equivalent of cdr.
 - `def` and `define` - add a new entry to a hashtable (global environment table by default). `def` evaluates the key argument while define doesn't.
+- `set` and `setq` - replaces the value of the first entry of a symbol in the symbol table with the specified value.
 - `basic` - returns a hashtable with the all the builtin functions.
 - `empty` returns an empty hashtable.
 - `pack` - equivalent of `progn`
 - `let` - create local variable bindings.
 - `run` - equivalent of `eval`
 - `load` - load a file.
+- `format`, `print` and `println` - print to standard output.
 
 ## Notes
 - mu-lisp is Lisp-1, it does not have a separate namespace for functions.
@@ -77,6 +79,7 @@ You can add common lisp functions to mu-lisp. Open `main.lisp` and inside the `g
 ```
 
 ## To do
+
 mu-lisp is very much a work in progress. There is a lot left to do, including
 - Write a debugger. Currently it drops to host lisp implementations debugger upon error.
 - Tail call optimization

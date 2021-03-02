@@ -57,6 +57,23 @@
 	(setf we (mu-run we env write-env)))
     (setf (gethash (car args) we) (mu-run (cadr args) env write-env))))
 
+(defun s (var val env)
+  (if env
+      (let ((e (car env)))
+	(if (not (eql (gethash var e :error) :error))
+	    (setf (gethash var e) val)
+	    (s var val (cdr env))))))
+
+(defun mu-set (args env write-env)
+  (let ((var (mu-run (car args) env write-env))
+	(val (mu-run (cadr args) env write-env)))
+    (s var val env)))
+
+(defun mu-setq (args env write-env)
+  (let ((var (car args))
+	(val (mu-run (cadr args) env write-env)))
+    (s var val env)))
+
 (defun mu-let (args env write-env)
   (let ((local-env (make-hash-table)))
     (mapcar (lambda (x)
@@ -91,6 +108,12 @@
 (defun mu-eval (args env write-env)
   (mu-run (mu-run (car args) env write-env) env write-env))
 
+(defun mu-print (args env write-env)
+  (format t "~D" (mu-run (car args) env write-env)))
+
+(defun mu-println (args env write-env)
+  (format t "~D~C" (mu-run (car args) env write-env) #\linefeed))
+
 (defun ld (stream env write-env)
   (let ((form (read stream nil :eof)))
     (if (not (eql form :eof))
@@ -116,14 +139,15 @@
 		      (*running* t)
 		      (if #'mu-if) (t t) (nil nil) (function #'mu-function) (macro #'mu-macro)
 		      (pack #'mu-pack) (def #'mu-def) (define #'mu-define) (let #'mu-let)
+		      (set #'mu-set) (setq #'mu-setq)
 		      (envr #'mu-envr) (basic #'mu-basic) (empty #'mu-empty) (with #'mu-with) (with-append #'mu-with-append) (run #'mu-eval)
 		      (load #'mu-load)
 		      (to #'mu-to) (read-envrs #'mu-read-envrs)
 		      (+ (muify #'+)) (- (muify #'-)) (* (muify #'*)) (/ (muify #'/))
 		      (< (muify #'<)) (> (muify #'>)) (= (muify #'=)) (= (muify #'eql))
 		      (not (muify #'not))
-		      (print (muify #'format))
-		      (first (muify #'car)) (second (muify #'cdr)) (pair (muify #'cons)) (list (muify #'list))
+		      (format (muify #'format)) (print #'mu-print) (println #'mu-println)
+		      (first (muify #'car)) (rest (muify #'cdr)) (pair (muify #'cons)) (list (muify #'list))
 		      (parse (muify #'read)) (read-char (muify #'read-char)) (peek-char (muify #'peek-char))))))
     (and nil (mu-run `(load "init.lisp") (list ge)))
     (mu-run `(define quit (function () (define *running* nil))) (list ge) ge)
